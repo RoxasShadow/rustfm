@@ -1,4 +1,5 @@
-#[macro_use] extern crate serde_derive;
+#[macro_use]
+extern crate serde_derive;
 extern crate serde;
 extern crate serde_json;
 extern crate hyper;
@@ -28,7 +29,7 @@ type HTTPResult = hyper::error::Result<hyper::client::response::Response>;
 #[derive(Deserialize)]
 pub struct RawData {
     #[serde(rename = "#text")]
-    pub text: String
+    pub text: String,
 }
 
 impl fmt::Debug for RawData {
@@ -44,21 +45,21 @@ impl fmt::Display for RawData {
 }
 
 pub struct RequestBuilder<'a, T: 'a> {
-    client:  &'a mut Client,
-    url:     Url,
-    phantom: PhantomData<&'a T>
+    client: &'a mut Client,
+    url: Url,
+    phantom: PhantomData<&'a T>,
 }
 
 pub struct Client {
-    api_key:     String,
-    http_client: HTTPClient
+    api_key: String,
+    http_client: HTTPClient,
 }
 
 impl Client {
     pub fn new(api_key: &str) -> Client {
         Client {
-            api_key:     api_key.to_owned(),
-            http_client: HTTPClient::new()
+            api_key: api_key.to_owned(),
+            http_client: HTTPClient::new(),
         }
     }
 
@@ -66,7 +67,8 @@ impl Client {
     fn build_url(&self, params: Vec<(&str, &str)>) -> Url {
         let mut url = Url::parse("http://ws.audioscrobbler.com/2.0/").unwrap();
 
-        url.query_pairs_mut().clear()
+        url.query_pairs_mut()
+            .clear()
             .append_pair("api_key", &*self.api_key)
             .append_pair("format", "json");
 
@@ -96,19 +98,20 @@ mod tests {
     #[test]
     fn test_build_url() {
         let api_key = env::var("API_KEY").unwrap();
-        let user    = env::var("USER").unwrap();
+        let user = env::var("USER").unwrap();
 
         let client = make_client();
-        let url    = client.build_url(vec![
-                                      ("method", "user.getrecenttracks"),
-                                      ("user",   &user)
-        ]);
+        let url = client.build_url(vec![("method", "user.getrecenttracks"), ("user", &user)]);
 
         assert_eq!(url.as_str(),
-            &format!("http://ws.audioscrobbler.com/2.0/?api_key={}&format=json&method=user.getrecenttracks&user={}", api_key, user));
+                   &format!("http://ws.audioscrobbler.com/2.\
+                             0/?api_key={}&format=json&method=user.getrecenttracks&user={}",
+                            api_key,
+                            user));
 
         let url = client.build_url(vec![]);
         assert_eq!(url.as_str(),
-            &format!("http://ws.audioscrobbler.com/2.0/?api_key={}&format=json", api_key));
+                   &format!("http://ws.audioscrobbler.com/2.0/?api_key={}&format=json",
+                            api_key));
     }
 }
